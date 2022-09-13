@@ -1,0 +1,162 @@
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.by import By
+import re
+import time
+
+e_mail = '__________@_____.___'
+psswrd = '__________'
+
+chrome_driver_path = 'C:/webdriver/chromedriver.exe'
+driver = webdriver.Chrome(service=Service(chrome_driver_path))
+
+driver.get('https://www.linkedin.com/jobs/search/?currentJobId=3255608217&f_AL=true&f_E=2&f_WT=2&geoId=101279968&'
+           'keywords=python%20developer&location=Provincia%20de%20Buenos%20Aires%2C%20Argentina&refresh=true&sort'
+           'By=DD')
+
+log_in = driver.find_element(By.CLASS_NAME, 'btn-secondary-emphasis')
+log_in.click()
+
+email = driver.find_element(By.ID, 'username')
+email.send_keys(e_mail)
+
+password = driver.find_element(By.ID, 'password')
+password.send_keys(psswrd)
+
+log_in2 = driver.find_element(By.CLASS_NAME, 'from__button--floating')
+log_in2.click()
+time.sleep(3)
+
+cant_jobs = driver.find_element(By.XPATH, '//*[@id="main"]/div/section[1]/header/div[1]/small').text
+can_jobs = int(re.sub('[^0-9]', '', cant_jobs))
+
+print(can_jobs)
+
+sent = 0
+passed = 0
+skip = 0
+i = 1
+while can_jobs > 0:
+    cantjobs = str(can_jobs)
+    print(cantjobs + f' {i}')
+    time.sleep(3)
+    job_selection = driver.find_element(By.XPATH,
+                                        f'/html/body/div[5]/div[3]/div[4]/div/div/main/div/section[1]/div/ul/li[{i}]'
+                                        f'/div/div[1]')
+    job_selection.click()
+    time.sleep(3)
+
+    try:
+        job_application = driver.find_element(By.XPATH, '/html/body/div[5]/div[3]/div[4]/div/div/main/div/section[2]'
+                                                        '/div/div[2]/div[1]/div/div[1]/div/div[1]/div[1]/div[3]/div/'
+                                                        'div/div/button/span')
+        job_application.click()
+        time.sleep(3)
+        button_text = driver.find_element(By.XPATH, '/html/body/div[3]/div/div/div[2]/div/div[2]/form/footer/div[2]'
+                                                    '/button/span')
+        # print(button_text.text + ' BUTTON TEXT')
+        home_address = driver.find_element(By.XPATH, '/html/body/div[3]/div/div/div[2]/div/div[2]/form/div/div/h3')
+        if button_text.text == 'Enviar solicitud':
+            send = driver.find_element(By.XPATH, '/html/body/div[3]/div/div/div[2]/div/div/form/footer/div[3]/button')
+            send.click()
+            time.sleep(3)
+            Exit = driver.find_element(By.XPATH, '/html/body/div[3]/div/div/button')
+            Exit.click()
+            time.sleep(3)
+            sent += 1
+            print(f'Sent: {sent}')
+        elif button_text.text == 'Siguiente' and home_address.text == 'Home address':
+            Exit = driver.find_element(By.XPATH, '/html/body/div[3]/div/div/button')
+            Exit.click()
+            discard = driver.find_element(By.XPATH, '/html/body/div[3]/div[2]/div/div[3]/button[1]')
+            discard.click()
+            time.sleep(3)
+            skip += 1
+            print(f'Skipped: {skip}')
+
+        elif home_address.text == 'Información de contacto' or home_address.text == 'Contact info':
+            Next = driver.find_element(By.XPATH, '/html/body/div[3]/div/div/div[2]/div/div[2]/form/footer/div[2]'
+                                                 '/button')
+            Next.click()
+            button_text2 = driver.find_element(By.XPATH, '/html/body/div[3]/div/div/div[2]/div/div[2]/form/footer/'
+                                                         'div[2]/button[2]/span')
+            preguntas_extra = driver.find_element(By.XPATH, '/html/body/div[3]/div/div/div[2]/div/div[2]/form/div/div/h3')
+            time.sleep(3)
+            if button_text2.text == 'Siguiente':
+                Next2 = driver.find_element(By.XPATH, '/html/body/div[3]/div/div/div[2]/div/div[2]'
+                                                      '/form/footer/div[2]/button[2]')
+                Next2.click()
+                button_text3 = driver.find_element(By.XPATH, '/html/body/div[3]/div/div/div[2]/div/div[2]/form/'
+                                                             'footer/div[2]/button[2]/span')
+                preguntas_extra2 = driver.find_element(By.XPATH,
+                                                      '/html/body/div[3]/div/div/div[2]/div/div[2]/form/div/div/h3')
+
+                time.sleep(3)
+
+                if preguntas_extra2.text == 'Preguntas adicionales' or \
+                        preguntas_extra2.text == 'Additional Questions' or preguntas_extra2.text == 'Home address' or \
+                        preguntas_extra2.text == 'Additional':
+                    Exit = driver.find_element(By.XPATH, '/html/body/div[3]/div/div/button')
+                    Exit.click()
+                    discard = driver.find_element(By.XPATH, '/html/body/div[3]/div[2]/div/div[3]/button[1]')
+                    discard.click()
+                    time.sleep(3)
+                    skip += 1
+                    print(f'Skipped: {skip}')
+
+                else:
+                    Next3 = driver.find_element(By.XPATH, '/html/body/div[3]/div/div/div[2]/div/div[2]'
+                                                          '/form/footer/div[2]/button[2]')
+                    Next3.click()
+                    time.sleep(3)
+                    next3text = driver.find_element(By.XPATH, '/html/body/div[3]/div/div/div[2]/div/div[2]'
+                                                              '/form/footer/div[2]/button[2]/span')
+                    print(next3text.text + ' Next3')
+                    if next3text.text == 'Revisar':
+                        Next3 = driver.find_element(By.XPATH, '/html/body/div[3]/div/div/div[2]/div/div[2]/form/footer/div[2]'
+                                                              '/button[2]')
+                        Next3.click()
+                        time.sleep(3)
+                        send = driver.find_element(By.XPATH, '/html/body/div[3]/div/div/div[2]/div/div[2]/div/footer/div[3]'
+                                                             '/button[2]')
+                        send.click()
+                        time.sleep(3)
+                        Exit = driver.find_element(By.XPATH, '/html/body/div[3]/div/div/button')
+                        Exit.click()
+                        time.sleep(3)
+                        sent += 1
+                        print(f'Sent: {sent}')
+            elif preguntas_extra.text == 'Preguntas adicionales' or \
+                    preguntas_extra.text == 'Additional Questions' or preguntas_extra.text == 'Home address' or \
+                    preguntas_extra.text == 'Additional':
+                Exit = driver.find_element(By.XPATH, '/html/body/div[3]/div/div/button')
+                Exit.click()
+                discard = driver.find_element(By.XPATH, '/html/body/div[3]/div[2]/div/div[3]/button[1]')
+                discard.click()
+                skip += 1
+                print(f'Skipped: {skip}')
+                time.sleep(3)
+
+            elif button_text2.text == 'Revisar':
+                Next3 = driver.find_element(By.XPATH, '/html/body/div[3]/div/div/div[2]/div/div[2]/form/footer/div[2]'
+                                                      '/button[2]')
+                Next3.click()
+                time.sleep(3)
+                send = driver.find_element(By.XPATH, '/html/body/div[3]/div/div/div[2]/div/div[2]/div/footer/div[3]'
+                                                     '/button[2]')
+                send.click()
+                time.sleep(3)
+                Exit = driver.find_element(By.XPATH, '/html/body/div[3]/div/div/button')
+                Exit.click()
+                time.sleep(3)
+                sent += 1
+                print(f'Sent: {sent}')
+    except NoSuchElementException:
+        passed += 1
+        print(f'Passed: {passed}')
+
+        time.sleep(3)
+
+    i += 1
+    can_jobs -= 1
